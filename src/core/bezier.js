@@ -95,8 +95,8 @@ export const cubic01 = (x2, x3, t) => {
 
 /**
  * Search "t" for a given "x" on a 0-1 cubic bezier interval. 
- * Implementation via Binary Search.
- * 12 iterations is enough to produce a smooth interpolation 1000px wide. 
+ * Implementation via Binary Search and final Linear Interpolation.
+ * 6 iterations is enough to produce a smooth interpolation 1000px wide. 
  * 
  * Assuming x1 = 0, x4 = 1
  * @param {number} x2 
@@ -109,10 +109,12 @@ export const cubic01SearchT = (
   x2,
   x3,
   x,
-  iterations = 12,
+  iterations = 6,
   precision = 0.0001,
-  step = 0.5,
-  t = 0.5,
+  lowerT = 0,
+  upperT = 1,
+  lowerX = 0,
+  upperX = 1,
 ) => {
   if (x <= precision) {
     return 0
@@ -120,21 +122,67 @@ export const cubic01SearchT = (
   if (x >= 1 - precision) {
     return 1
   }
+
+  let diffX = 0, currentX = 0, currentT = 0
   for (let i = 0; i < iterations; i++) {
-    step /= 2
-    const xt = cubic01(x2, x3, t)
-    const diff = xt - x
-    if (Math.abs(diff) <= precision) {
-      return t
+    currentT = (lowerT + upperT) / 2
+    currentX = cubic01(x2, x3, currentT)
+    diffX = x - currentX
+    if (Math.abs(diffX) <= precision) {
+      return currentT
     }
-    if (diff < 0) {
-      t += step
+    if (diffX < 0) {
+      upperT = currentT
+      upperX = currentX
     } else {
-      t += -step
+      lowerT = currentT
+      lowerX = currentX
     }
   }
-  return t
+
+  // return the final linear interpolation between lower and upper bounds
+  return lowerT + (upperT - lowerT) * (x - lowerX) / (upperX - lowerX)
 }
+
+// WIP
+// export const cubic01SearchTBounds = (
+//   x2,
+//   x3,
+//   x,
+//   iterations = 6,
+//   precision = 0.0001,
+//   lowerT = 0,
+//   upperT = 1,
+//   lowerX = 0,
+//   upperX = 1,
+// ) => {
+//   if (x <= precision) {
+//     return 0
+//   }
+//   if (x >= 1 - precision) {
+//     return 1
+//   }
+
+//   let diffX = 0, currentX = 0, currentT = 0
+//   for (let i = 0; i < iterations; i++) {
+//     currentT = (lowerT + upperT) / 2
+//     currentX = cubic01(x2, x3, currentT)
+//     diffX = x - currentX
+//     if (Math.abs(diffX) <= precision) {
+//       return currentT
+//     }
+//     if (diffX < 0) {
+//       upperT = currentT
+//       upperX = currentX
+//     } else {
+//       lowerT = currentT
+//       lowerX = currentX
+//     }
+//   }
+
+//   // return the final linear interpolation between lower and upper bounds
+//   return [low]
+// }
 
 /**
  * Solve "y"
@@ -147,7 +195,7 @@ export const cubic01SearchT = (
  * @param {number} precision
  * @returns 
  */
-export const solveCubicEasing = (x1, y1, x2, y2, x, iterations = 12, precision = 0.0001) => {
+export const solveCubicEasing = (x1, y1, x2, y2, x, iterations = undefined, precision = undefined) => {
   const t = cubic01SearchT(x1, x2, x, iterations, precision)
   const y = cubic01(y1, y2, t)
   return y
@@ -170,18 +218,15 @@ export const cachedCubicEasing = (x1, y1, x2, y2, size = 20, precision = 0.0001)
     if (x >= 1 - precision) {
       return 1
     }
-    return solveCubicEasing(x1, y1, x2, y2, x, 4)
-    const t1 = cache[Math.floor(x * size)]
-    const t2 = cache[Math.ceil(x * size)]
-    const ti = (t1 + t2) / 2
-    const step = (t2 - t1) / 2
-    // const t = cubic01SearchT(x1, x2, x, 6, precision, step, ti)
-    const t = t1 + (t2 - t1) * ((x * size) % 1)
-    const y = cubic01(y1, y2, t)
-    return y
+    // TODO: do some cache here
+    // let index = Math.floor((size + 1) * x)
+
+    return solveCubicEasing(x1, y1, x2, y2, x)
   }
   return solve
 }
+
+
 
 export const bezier = {
   

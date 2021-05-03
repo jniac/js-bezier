@@ -278,8 +278,9 @@ const alignment = {
  * Creates a centered rectangle.
  */
 export const rect = ({
-	width = 100,
-	height = 100,
+	size = 100,
+	width = size,
+	height = size,
 	align = '',
 	...params
 } = {}) => {
@@ -288,7 +289,7 @@ export const rect = ({
 	x *= -width
 	y *= -height
 	
-	create('rect', params, { x, y, width, height })
+	return create('rect', params, { x, y, width, height })
 }
 
 /**
@@ -304,6 +305,7 @@ export const polyline = ({
 export const text = (text = '...', {
 	textAnchor = 'middle',
 	fontSize = '16px',
+	userSelect = 'none',
 	...params
 } = {}) => {
 	const wrapper = create('text', {
@@ -312,6 +314,7 @@ export const text = (text = '...', {
 		...params
 	})
 	wrapper.element.innerHTML = text
+	wrapper.element.style.userSelect = userSelect
 	return wrapper
 }
 
@@ -323,15 +326,17 @@ export const grid = ({
 	subdivisions = 10,
 	...params
 } = {}) => {
-	const g = create('g', { parent,  })
+	const grid = create('g', { parent,  })
+	
 	rect({
 		width, 
 		height,
 		stroke: color,
 		fill: 'none',
 		align:'TL',
-		parent: g,
+		parent: grid,
 	})
+
 	for (let i = 1; i < subdivisions; i++) {
 		const t = i / subdivisions
 		create('line', {
@@ -342,7 +347,7 @@ export const grid = ({
 			y2: height,
 			opacity: .25,
 			'stroke-dasharray': '2 3',
-			parent: g,
+			parent: grid,
 		})
 		create('line', {
 			stroke: color,
@@ -352,7 +357,23 @@ export const grid = ({
 			y2: height,
 			opacity: .25,
 			'stroke-dasharray': '2 3',
-			parent: g,
+			parent: grid,
 		})
 	}
+
+	
+	const xMarker = (x, str = '', markerColor = color) => {
+		const gx = x * width
+		line({ parent:grid, x1:gx, y1:0, x2:gx, y2:height, stroke:markerColor })
+		text(str, { parent:grid, x:gx, y:height + 20, textAnchor:'middle', fill:markerColor })
+	}
+	
+	const yMarker = (y, str = '', markerColor = color) => {
+		const gy = (1 - y) * width
+		line({ parent:grid, x1:0, y1:gy, x2:width, y2:gy, stroke:markerColor })
+		text(str, { parent:grid, x:width + 10, y:gy, textAnchor:'start', fill:markerColor, 'alignment-baseline':'middle' })
+	}
+
+	Object.assign(grid, { xMarker, yMarker })
+	return grid
 }
