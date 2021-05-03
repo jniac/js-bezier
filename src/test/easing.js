@@ -68,7 +68,8 @@ const createAnchor = (x, y) => {
 // const BEZIER = [0.5, 0.5, 0.5, 1.0]
 // const BEZIER = [0.5, 0.0, 0.5, 1.0]
 // const BEZIER = [0.0, 1.0, 1.0, 0.0]
-const BEZIER = [1.0, 0.0, 0.0, 1.0]
+// const BEZIER = [1.0, 0.0, 0.0, 1.0]
+const BEZIER = [0.5, 0.1, 0.1, 0.9]
 const A1 = createAnchor(BEZIER[0], BEZIER[1])
 const A2 = createAnchor(BEZIER[2], BEZIER[3])
 
