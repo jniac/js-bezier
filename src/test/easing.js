@@ -12,7 +12,18 @@ const SAMPLES = width
 const STEPS = 9
 const DERIVATIVE_SCALE_Y = .2
 
-const parent = create('g', { x:400, y:300 })
+const createSceneWrapper = (width, height) => {
+  const g = create('g')
+  const arrange = () => {
+    g.x = (window.innerWidth - width) / 2
+    g.y = (window.innerHeight - height) / 2
+  }
+  window.addEventListener('resize', () => arrange())
+  arrange()
+  return g
+}
+
+const parent = createSceneWrapper(width, height)
 
 const toGraphX = x => x * width
 const toGraphY = y => (1 - y) * height
