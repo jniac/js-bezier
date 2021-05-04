@@ -1,4 +1,5 @@
 import { shortFixed } from './string-utils.js'
+import { toSvgAttribute } from './svg-attributes.js'
 
 export const svgNS = 'http://www.w3.org/2000/svg'
 export const svg = document.querySelector('svg')
@@ -105,7 +106,13 @@ class SVGWrapper {
 	}
 
 	setAttribute(name, value) {
-		this.element.setAttributeNS(null, name, value)
+		this.element.setAttributeNS(null, toSvgAttribute(name), value)
+	}
+
+	setAttributes(bundle) {
+		for (const [key, value] of Object.entries(bundle)) {
+			this.setAttribute(key, value)
+		}
 	}
 
 	get visible() { return !(this.element.getAttributeNS(null, 'visibilty') === 'hidden') }
@@ -240,7 +247,7 @@ export const create = (type = 'g', params = {}, extraSvgParams = {}) => {
 	Object.assign(params, extraSvgParams)
 
 	for (const [key, value] of Object.entries(params)) {
-		element.setAttributeNS(null, key, value)
+		element.setAttributeNS(null, toSvgAttribute(key), value)
 	}
 
 	return wrapper
@@ -328,11 +335,11 @@ export const grid = ({
 } = {}) => {
 	const grid = create('g', { parent,  })
 	
-	rect({
+	const r = rect({
 		width, 
 		height,
 		stroke: color,
-		fill: 'none',
+		fill: 'transparent',
 		align:'TL',
 		parent: grid,
 	})
