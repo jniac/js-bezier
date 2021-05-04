@@ -319,7 +319,7 @@ export const text = (text = '...', {
 }
 
 export const grid = ({
-	color = '#0006',
+	color = '#aaa',
 	parent = null,
 	width = 100,
 	height = 100,

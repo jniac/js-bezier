@@ -31,7 +31,7 @@ const toGraph = ({ x, y }) => ({ x:toGraphX(x), y:toGraphY(y) })
 const fromGraph = ({ x, y }) => ({ x:x / width, y:1 - (y / height) })
 
 text('cubic-easing', { parent, textAnchor:'start', y:-10 })
-const g = grid({ parent, width, height, subdivisions:10 })
+const g = grid({ parent, width, height, subdivisions:10, color:'#aaa'})
 g.xMarker(1/3, '1/3')
 g.xMarker(2/3, '2/3')
 g.yMarker(1/3, '1/3')
@@ -48,6 +48,7 @@ const anchor = (x, y) => circle({ parent, x, y, r:8, stroke:'#c9f', fill:'#c9f3'
   draw()
 })
 
+const uniformDots = new Array(STEPS).fill().map(() => circle({ parent, fill:'#aaa', r:4.5 }))
 const derivative = create('polygon', { parent, fill:'#fc04' })
 const segments = polyline({ parent, stroke:'#c9f' })
 const xCurve = polyline({ parent, stroke:'#f42', 'stroke-dasharray':[2, 3] })
@@ -57,7 +58,6 @@ const yCurveLabel = text('y', { parent, fill:'#2c4' })
 const exactCurve = polyline({ parent, stroke:'#03f3', 'stroke-width':20 })
 const greCurve = polyline({ parent, stroke:'green', 'stroke-width':1 })
 const approxCurve = polyline({ parent, stroke:'blue' })
-const uniformDots = new Array(STEPS).fill().map(() => rect({ parent, fill:'blue', width:4, height:16 }))
 const nonUniformDots = new Array(31).fill().map(() => circle({ parent, fill:'blue', r:2 }))
 
 const createAnchor = (x, y) => {
@@ -69,7 +69,8 @@ const createAnchor = (x, y) => {
 // const BEZIER = [0.5, 0.0, 0.5, 1.0]
 // const BEZIER = [0.0, 1.0, 1.0, 0.0]
 // const BEZIER = [1.0, 0.0, 0.0, 1.0]
-const BEZIER = [0.5, 0.1, 0.1, 0.9]
+// const BEZIER = [0.5, 0.1, 0.1, 0.9]
+const BEZIER = [0.6, 0.6, 0.1, 0.9]
 const A1 = createAnchor(BEZIER[0], BEZIER[1])
 const A2 = createAnchor(BEZIER[2], BEZIER[3])
 
@@ -110,7 +111,7 @@ const draw = () => {
     return { x, y }
   })
   pointsAttribute(segments, [{ x:0, y:0 }, { x:x1, y:y1 }, { x:x2, y:y2 }, { x:1, y:1 }])
-  pointsAttribute(exactCurve, points)
+  // pointsAttribute(exactCurve, points)
 
   pointsAttribute(xCurve, getSamples(t => ({ x:t, y:bezier.cubic01(x1, x2, t)})))
   Object.assign(xCurveLabel, toGraph({ x:.1, y:bezier.cubic01(x1, x2, .1) + .02 }))

@@ -4,6 +4,10 @@ WIP!
 
 Stuff for bezier interpolation (1D, 2D, 3D, easing, derivative (first & second)).
 
+<a href="https://jniac.github.io/js-bezier/">
+  <img src="./readme/graph-cubic-easing.svg" width="800" height="600">
+</a>
+
 [index.html](https://jniac.github.io/js-bezier/)
 
 ## links
