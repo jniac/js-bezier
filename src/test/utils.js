@@ -45,7 +45,7 @@ export const createGraphWrapper = (width, height, CURVE_SAMPLES = width) => {
     SAMPLES = CURVE_SAMPLES,
   }) => {
     const curve = polyline({ parent:graph, stroke:color, strokeDasharray })
-    const t = text(label, { parent:graph, fill:color })
+    const labelText = text(label, { parent:graph, fill:color })
 
     const mapPoint = ({ x, y }) => ({ x, y:y * SCALE_Y })
     const update = (getPoint) => {
@@ -57,10 +57,10 @@ export const createGraphWrapper = (width, height, CURVE_SAMPLES = width) => {
       labelPoint.y += -10
 
       curve.setAttribute('points', graphPointsAttribute(curvePoints.map(mapPoint)))
-      Object.assign(t, labelPoint)
+      Object.assign(labelText, labelPoint)
     }
 
-    return { curve, label:t, update }
+    return { curve, label:labelText, update }
   }
   
   return {
