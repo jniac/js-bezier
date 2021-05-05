@@ -4,6 +4,7 @@ import { shortFixed } from '../core/string-utils.js'
 import { circle, create, grid, line, pointer, polyline, rect, text } from '../core/svg-stage.js'
 import { BEZIERS } from '../preset.js'
 import greBezier from '../lib/bezier-easing.js'
+import { anchor, createGraphWrapper } from './utils.js'
 
 const width = 600
 const height = 600
@@ -12,36 +13,16 @@ const SAMPLES = width
 const STEPS = 9
 const DERIVATIVE_SCALE_Y = .2
 
-const createSceneWrapper = (width, height) => {
-  const g = create('g')
-  const arrange = () => {
-    g.x = (window.innerWidth - width) / 2
-    g.y = (window.innerHeight - height) / 2
-  }
-  window.addEventListener('resize', () => arrange())
-  arrange()
-
-  const lineX = line({ parent:g, stroke:'#aaa6' })
-  const lineY = line({ parent:g, stroke:'#aaa6' })
-  
-  g.element.addEventListener('pointermove', (e) => {
-    const x = e.x - g.x
-    const y = e.y - g.y
-    lineX.setAttributes({ x1:x, y1:0, x2:x, y2:height })
-    lineY.setAttributes({ x1:0, y1:y, x2:width, y2:y })
-  })
-
-  return g
-}
-
-const parent = createSceneWrapper(width, height)
 
 
+const {
+  graph: parent,
+  toGraph,
+  fromGraph,
+  createCurve,
+} = createGraphWrapper(width, height)
 
-const toGraphX = x => x * width
-const toGraphY = y => (1 - y) * height
-const toGraph = ({ x, y }) => ({ x:toGraphX(x), y:toGraphY(y) })
-const fromGraph = ({ x, y }) => ({ x:x / width, y:1 - (y / height) })
+
 
 text('cubic-easing', { parent, textAnchor:'start', y:-10 })
 const g = grid({ parent, width, height, subdivisions:10, color:'#aaa'})
@@ -56,45 +37,26 @@ for (let i = 0; i < 3; i++) {
   g.yMarker(y, (i + 1), '#fc0')
 }
 
-const anchor = (x, y) => {
-
-  const r = 8
-  const fillOpacity = .25
-  const c = circle({ parent, x, y, r, stroke:'#c9f', fill:'#c9f', fillOpacity })
-  
-  c.setOnDrag(node => {
-    node.x = clamp(node.x + pointer.delta.x, 0, width)
-    node.y += pointer.delta.y
-    draw()
-  })
-
-  c.element.addEventListener('pointerover', () => {
-    c.setAttributes({ strokeWidth: 3, fillOpacity: .5, r: 10 })
-  })
-
-  c.element.addEventListener('pointerout', () => {
-    c.setAttributes({ strokeWidth: 1, fillOpacity, r })
-  })
-
-  return c
-}
-
 const uniformDots = new Array(STEPS).fill().map(() => circle({ parent, fill:'#aaa', r:4.5 }))
 const derivative = create('polygon', { parent, fill:'#fc04' })
-const derivativeSecond = create('polygon', { parent, fill:'#f004' })
+const derivativeSecond = create('polygon', { parent, fill:'#f9f4' })
 const segments = polyline({ parent, stroke:'#c9f' })
-const xCurve = polyline({ parent, stroke:'#f42', 'stroke-dasharray':[2, 3] })
-const xCurveLabel = text('x', { parent, fill:'#f42' })
-const yCurve = polyline({ parent, stroke:'#2c4', 'stroke-dasharray':[2, 3] })
-const yCurveLabel = text('y', { parent, fill:'#2c4' })
+const xCurve = createCurve({ color:'#f42', label:'x' })
+const xDerivative = createCurve({ color:'#f42', label:`x'`, SCALE_Y:DERIVATIVE_SCALE_Y })
+const yCurve = createCurve({ color:'#2c4', label:'y' })
+const yDerivative = createCurve({ color:'#2c4', label:`y'`, SCALE_Y:DERIVATIVE_SCALE_Y })
 const exactCurve = polyline({ parent, stroke:'#03f3', 'stroke-width':20 })
 const greCurve = polyline({ parent, stroke:'green', 'stroke-width':1 })
 const approxCurve = polyline({ parent, stroke:'blue' })
 const nonUniformDots = new Array(31).fill().map(() => circle({ parent, fill:'blue', r:2 }))
 
 const createAnchor = (x, y) => {
-  const A = toGraph({ x, y })
-  return anchor(A.x, A.y)
+  ({ x, y } = toGraph({ x, y }))
+  return anchor({
+    parent,
+    x, y,
+    onDrag: () => draw(),
+  })
 }
 // const BEZIER = BEZIERS[0]
 // const BEZIER = [0.5, 0.5, 0.5, 1.0]
@@ -112,12 +74,13 @@ const valuesText = text('...', { parent, textAnchor:'end', x: width - 10, y: hei
 
 
 
+const graphPoints = points => points
+  .map(p => toGraph(p))
+  .map(({ x, y }) => `${shortFixed(x)},${shortFixed(y)}`)
+  .join(' ')
+
 const pointsAttribute = (line, points) => {
-  const str = points
-    .map(p => toGraph(p))
-    .map(({ x, y }) => `${shortFixed(x)},${shortFixed(y)}`)
-    .join(' ')
-  line.setAttribute('points', str)
+  line.setAttribute('points', graphPoints(points))
 }
 
 /**
@@ -145,11 +108,12 @@ const draw = () => {
   pointsAttribute(segments, [{ x:0, y:0 }, { x:x1, y:y1 }, { x:x2, y:y2 }, { x:1, y:1 }])
   // pointsAttribute(exactCurve, points)
 
-  pointsAttribute(xCurve, getSamples(t => ({ x:t, y:bezier.cubic01(x1, x2, t)})))
-  Object.assign(xCurveLabel, toGraph({ x:.1, y:bezier.cubic01(x1, x2, .1) + .02 }))
-  pointsAttribute(yCurve, getSamples(t => ({ x:t, y:bezier.cubic01(y1, y2, t)})))
-  Object.assign(yCurveLabel, toGraph({ x:.2, y:bezier.cubic01(y1, y2, .2) + .02 }))
+  xCurve.update(x => ({ x, y:bezier.cubic01(x1, x2, x) }))
+  xDerivative.update(x => ({ x, y:bezier.cubic01Derivative(x1, x2, x) }))
 
+  yCurve.update(x => ({ x, y:bezier.cubic01(y1, y2, x) }))
+  yDerivative.update(x => ({ x, y:bezier.cubic01Derivative(y1, y2, x) }))
+  
   const derivativePoints = getSamples(t => {
     const x = bezier.cubic01(x1, x2, t)
     const dy = bezier.cubic01Derivative(y1, y2, t)
@@ -162,10 +126,12 @@ const draw = () => {
   // NOTE: Can't manage to calculate second derivative, WIP...
   // const derivativeSecondPoints = getSamples(t => {
   //   const x = bezier.cubic01(x1, x2, t)
-  //   let dy = bezier.cubic01DerivativeSecond(y1, y2, t)
-  //   let dx = bezier.cubic01DerivativeSecond(x1, x2, t)
-  //   // dy = -1 / (dy * dy)
-  //   const y = clamp(dx * dy, -1e3, 1e3) * DERIVATIVE_SCALE_Y
+  //   const dx = bezier.cubic01Derivative(x1, x2, t)
+  //   const dy = bezier.cubic01Derivative(y1, y2, t)
+  //   const ddx = bezier.cubic01DerivativeSecond(x1, x2, t)
+  //   const ddy = bezier.cubic01DerivativeSecond(y1, y2, t)
+  //   let y = (dx * ddy - dy * ddx) / (dx * dx)
+  //   y = clamp(y || 0, -1e3, 1e3) * DERIVATIVE_SCALE_Y
   //   return { x, y }
   // })
   // pointsAttribute(derivativeSecond, [...derivativeSecondPoints, { x:1, y:0 }, { x:0, y:0 }])
