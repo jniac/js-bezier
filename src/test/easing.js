@@ -56,6 +56,7 @@ const createAnchor = (x, y) => {
     parent,
     x, y,
     onDrag: () => draw(),
+    clampX: [0, width],
   })
 }
 // const BEZIER = BEZIERS[0]

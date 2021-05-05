@@ -40,7 +40,7 @@ export const createGraphWrapper = (width, height, CURVE_SAMPLES = width) => {
     color = '#f42',
     strokeDasharray = [2, 3],
     label = '',
-    labelX = .3,
+    labelX = .5,
     SCALE_Y = 1,
     SAMPLES = CURVE_SAMPLES,
   }) => {
