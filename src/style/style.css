@@ -16,9 +16,28 @@ body, body * {
 body {
     width: 100%;
     height: 100vh;
+    font-family: monospace;
 }
 
 svg {
     width: 100%;
     height: 100%;
+}
+
+.browser-warning {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    padding: 32px;
+    background-color: #f003;
+    color: red;
+    font-size: 1.25em;
+    text-align: center;
+}
+.browser-warning .errors {
+    margin: 16px;
+    padding: 16px;
+    border: solid 2px red;
+    font-size: 14px;
+    background-color: #f003;
 }

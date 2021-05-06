@@ -1,8 +1,21 @@
-import { newBench } from './core/bench.js'
-import { circle, create, pointer } from './core/svg-stage.js'
-import { clamp } from './core/math-utils.js'
-import { shortFixed } from './core/string-utils.js'
+const onError = error => {
+  const createDiv = () => {
+    const div = document.createElement('div')
+    div.classList.add('browser-warning')
+    div.innerHTML = `
+      Currently using last ES features (private fields, top level await),<br>
+      not supported by your browser.<br>
+      <div class="errors"></div>
+      Try with Chrome.
+    `
+    document.body.append(div)
+    return div
+  }
 
-// import('./test/flat.js')
-import('./test/easing.js')
-import('./test/perf.js')
+  const div = document.querySelector('.browser-warning') ?? createDiv()
+  div.querySelector('.errors').innerHTML += `${error}<br>`
+}
+
+import('./test/easing.js').catch(onError)
+import('./test/perf.js').catch(onError)
+
