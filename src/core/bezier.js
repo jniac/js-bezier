@@ -1,3 +1,4 @@
+// https://github.com/jniac/js-bezier/blob/main/src/core/bezier.js
 /**
  * Returns the cubic interpolation.
  * https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Cubic_B%C3%A9zier_curves

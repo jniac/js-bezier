@@ -14,8 +14,13 @@ const onError = error => {
 
   const div = document.querySelector('.browser-warning') ?? createDiv()
   div.querySelector('.errors').innerHTML += `${error}<br>`
+
+  throw error
 }
 
 import('./test/easing.js').catch(onError)
-import('./test/perf.js').catch(onError)
+
+if (/localhost/.test(location.href)) {
+  import('./test/perf.js').catch(onError).then(({ output }) => console.log(output))
+}
 

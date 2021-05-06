@@ -107,7 +107,7 @@ const draw = () => {
     return { x, y }
   })
   pointsAttribute(segments, [{ x:0, y:0 }, { x:x1, y:y1 }, { x:x2, y:y2 }, { x:1, y:1 }])
-  // pointsAttribute(exactCurve, points)
+  pointsAttribute(exactCurve, points)
 
   xCurve.update(x => ({ x, y:bezier.cubic01(x1, x2, x) }))
   xDerivative.update(x => ({ x, y:bezier.cubic01Derivative(x1, x2, x) }))

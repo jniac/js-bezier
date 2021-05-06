@@ -5,10 +5,19 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bezier</title>
-    <link rel="stylesheet" href="src/style/style.css">
+    <link rel="stylesheet" href="pages/style/style.css">
 </head>
 <body>
-    <svg xmlns="http://www.w3.org/2000/svg" style="font-family: monospace;"></svg>
+    <header>
+        Performance comparison:
+        <br>
+        <a href="https://github.com/gre/bezier-easing">gre (npm champion)</a>
+        vs.
+        <a href="https://github.com/jniac/js-bezier">jniac/js-bezier</a>
+        <br>
+        <button style="margin-top: 4px;" onclick="location.href='pages/perf.html'">See comparison</button>
+    </header>
+    <svg xmlns="http://www.w3.org/2000/svg" style="font-family: 'Inconsolata', monospace;"></svg>
     <script src="src/main.js" type="module"></script>
 </body>
 </html>

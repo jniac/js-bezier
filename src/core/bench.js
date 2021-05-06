@@ -1,7 +1,7 @@
-const wait = delay => new Promise(r => setTimeout(r, delay))
-const thousands = (x, sep = '_') => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, sep)
+export const wait = delay => new Promise(r => setTimeout(r, delay))
+export const thousands = (x, sep = '_') => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, sep)
 
-export const newBench = (name = 'bench something') => {
+export const newBench = (name = 'bench something', description = '') => {
 
   const map = new Map()
   
@@ -97,16 +97,21 @@ export const newBench = (name = 'bench something') => {
   
     const lines = []
     lines.push(`bench "${name}" (${runCount}/${runCount}):`)
+    lines.push(...description.split('\n').filter(str => !!str))
+    lines.push('')
     for (const bundle of [...map.values(), noopBundle]) {
       const { msg, opByMs } = bundle
       const isFaster = bundle === faster
       lines.push(`  ${msg}:`)
-      lines.push(`    ${isFaster ? 'FASTER!' : `x${(faster.opByMs / opByMs).toFixed(3)}`}`)
       lines.push(`    op/ms: ${thousands(opByMs.toFixed(2))}`)
-      lines.push(`    ${thousands(bundle.totalRunLoop)} in ${bundle.totalDuration}ms`)
+      lines.push(`    ${thousands(bundle.totalRunLoop)}op in ${bundle.totalDuration}ms`)
+      lines.push(`    ${isFaster ? 'FASTER!' : `x${(faster.opByMs / opByMs).toFixed(3)}`}`)
       lines.push('')
     }
-    console.log(lines.join('\n'))
+
+    const message = lines.join('\n')
+    
+    return message
   }
   
   return {
